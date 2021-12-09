@@ -5,11 +5,9 @@ import nltk_utils
 import numpy as np
 import os
 
+from model import model_create, model_compile, model_fit
+
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras import layers
-from tensorflow.keras import models
 from keras.utils.np_utils import to_categorical
 
 def jsonOpen():
@@ -56,27 +54,33 @@ if __name__ == "__main__":
 
     y_train = to_categorical(y_train, 7)
 
+    # create the NN model
+    input_size = len(all_words)
+    # number of hidden neurons
+    hidden_size = 8
+    # number of output neurons
+    output_size = 7
+    model = model_create(input_size, hidden_size, output_size)
 
-    model = models.Sequential()
-    model.add(layers.Dense(8,activation="relu", input_shape=(len(all_words),)))
-    model.add(layers.Dense(8,activation="relu"))
-    model.add(layers.Dense(7,activation="softmax"))
+    # compile the model
+    loss = "categorical_crossentropy"
+    metrics = "accuracy"
+    model = model_compile(model, loss, metrics)
 
-    model.compile(optimizer='rmsprop',
-                  loss='categorical_crossentropy',
-                  metrics=['accuracy'])
 
+    # fit the model and get the results
     x_val = x_train[:5]
     partial_x_train = x_train[5:]
 
     y_val = y_train[:5]
     partial_y_train = y_train[5:]
+    epochs = 2
+    batch_size = 8
+    history = model_fit(model,partial_x_train,partial_y_train,
+                        x_val,y_val,
+                        epochs,batch_size)
 
-    history = model.fit(partial_x_train,
-                        partial_y_train,
-                        epochs=4,
-                        batch_size=8,
-                        validation_data=(x_val,y_val))
+
 
     print(history)
 
